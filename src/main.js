@@ -1,4 +1,9 @@
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 
 const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -18,8 +23,6 @@ var map = L.map('map')
           )
         );
 
-//Marker
-var marker = L.marker([47.0096, 2.6053]).addTo(map);
 // GeoJSON
 var geojsonMarkerOptions = {
     radius: 8,
@@ -30,11 +33,23 @@ var geojsonMarkerOptions = {
     fillOpacity: 0.8
 };
 
-L.geoJSON(geojsonFeature, {
-    pointToLayer: function (feature, latlng) {
-        return L.circleMarker(latlng, geojsonMarkerOptions);
-    }}).bindPopup(function (layer) {
-    return layer.feature.properties.nom + "<br>" + layer.feature.properties.adresse;
-}).addTo(map);  b
+var clusters = L.markerClusterGroup();
+const markers = L.geoJSON(geojsonFeature, 
+  {
+  pointToLayer: function (feature, latlng) 
+  {
+    return L.circleMarker(latlng, geojsonMarkerOptions)
+      .bindPopup(
+        feature.properties.nom + "<br>" + feature.properties.adresse
+      );
+  }
+});
+
+markers.eachLayer(function (layer) {
+  clusters.addLayer(layer);
+});
+
 //Popup 
-marker.bindPopup("<b>Hello world!</b><br>I am a popup.");
+
+clusters.addLayer(markers);
+map.addLayer(clusters);  
